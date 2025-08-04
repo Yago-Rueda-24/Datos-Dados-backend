@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -50,5 +51,59 @@ public class SpellController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         }
 
+    }
+
+
+    /**
+     * Endpoint que devuelve la lista de hechizos de un usuario
+     * @param token token de la sesión del usuario al que pertenecen los hechizos
+     * @param search nombre del hechizo que se usara para el filtro la búsqueda, puede estar vació
+     * @return Respuesta HTTP con el status code y la información correspondiente
+     */
+    @GetMapping("/list")
+    public ResponseEntity<?> getSpells(@RequestParam String token ,@RequestParam(required = false) String search){
+
+        if (!tokenService.validateAndRenewToken(token)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión ha expirado"));
+        }
+
+        UserEntity user = tokenService.getUser(token);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión no existe"));
+        }
+        try {
+            List<SpellDto> spellDtoList= spellService.getListSpells(user,search);
+            return ResponseEntity.status(HttpStatus.OK).body(spellDtoList);
+        } catch (InvalidInputDataException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+        }
+
+    }
+
+    /**
+     * Endpoint que devuelve un hechizo de un usuario
+     * @param token token de la sesión del usuario al que pertenecen los hechizos
+     * @param id id del hechizo que se busca
+     * @return Respuesta HTTP con el status code y la información correspondiente
+     */
+    @GetMapping("/myspell")
+    public ResponseEntity<?> getSpell(@RequestParam String token ,@RequestParam long id){
+        if (!tokenService.validateAndRenewToken(token)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión ha expirado"));
+        }
+
+        UserEntity user = tokenService.getUser(token);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión no existe"));
+        }
+        try {
+            SpellDto spellDto= spellService.getSpell(id);
+            if(spellDto ==null){
+                throw new InvalidInputDataException("Hechizo no encontrado");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(spellDto);
+        } catch (InvalidInputDataException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+        }
     }
 }
