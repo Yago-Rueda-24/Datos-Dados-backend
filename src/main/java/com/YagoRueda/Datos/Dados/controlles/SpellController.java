@@ -2,6 +2,7 @@ package com.YagoRueda.Datos.Dados.controlles;
 
 import com.YagoRueda.Datos.Dados.Dtos.SpellDto;
 import com.YagoRueda.Datos.Dados.exceptions.InvalidInputDataException;
+import com.YagoRueda.Datos.Dados.exceptions.UnauthorizedException;
 import com.YagoRueda.Datos.Dados.models.SpellEntity;
 import com.YagoRueda.Datos.Dados.models.UserEntity;
 import com.YagoRueda.Datos.Dados.services.SpellService;
@@ -30,10 +31,10 @@ public class SpellController {
     /**
      * Enpoint de creación de hechizos
      * @param token Token que representa la sesión de un usuario
-     * @param dto {@code SpellDto} que representa el hechizo creado
+     * @param dto   {@code SpellDto} que representa el hechizo creado
      * @return Respuesta HTTP con el status code correspondiente
      */
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<?> createSpell(@RequestParam String token, @RequestBody SpellDto dto) {
 
         if (!tokenService.validateAndRenewToken(token)) {
@@ -53,15 +54,65 @@ public class SpellController {
 
     }
 
+    /**
+     * Enpoint de modificación de hechizos
+     * @param token Token que representa la sesión de un usuario
+     * @param dto {@code SpellDto} que representa el hechizo modificado
+     * @return Respuesta HTTP con el status code correspondiente
+     */
+    @PutMapping()
+    public ResponseEntity<?> modifySpell(@RequestParam String token, @RequestBody SpellDto dto) {
+        if (!tokenService.validateAndRenewToken(token)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión ha expirado"));
+        }
+
+        UserEntity user = tokenService.getUser(token);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión no existe"));
+        }
+        try {
+            SpellEntity entity = spellService.modifySpell(user, dto);
+            return ResponseEntity.status(HttpStatus.OK).body(entity.toDTO());
+        } catch (InvalidInputDataException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    /**
+     * Enpoint de eliminación de hechizos
+     * @param token Token que representa la sesión de un usuario
+     * @param id id del hechizo a eliminar
+     * @return Respuesta HTTP con el status code correspondiente
+     */
+    @DeleteMapping()
+    public ResponseEntity<?> deleteSpell(@RequestParam String token, @RequestParam long id) {
+        if (!tokenService.validateAndRenewToken(token)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión ha expirado"));
+        }
+        UserEntity user = tokenService.getUser(token);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión no existe"));
+        }
+        try {
+            SpellEntity entity = spellService.deleteSpell(id);
+            return ResponseEntity.status(HttpStatus.OK).body(entity.toDTO());
+        } catch (InvalidInputDataException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+        }
+    }
+
 
     /**
      * Endpoint que devuelve la lista de hechizos de un usuario
-     * @param token token de la sesión del usuario al que pertenecen los hechizos
+     *
+     * @param token  token de la sesión del usuario al que pertenecen los hechizos
      * @param search nombre del hechizo que se usara para el filtro la búsqueda, puede estar vació
      * @return Respuesta HTTP con el status code y la información correspondiente
      */
     @GetMapping("/list")
-    public ResponseEntity<?> getSpells(@RequestParam String token ,@RequestParam(required = false) String search){
+    public ResponseEntity<?> getSpells(@RequestParam String token, @RequestParam(required = false) String search) {
 
         if (!tokenService.validateAndRenewToken(token)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión ha expirado"));
@@ -72,7 +123,7 @@ public class SpellController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión no existe"));
         }
         try {
-            List<SpellDto> spellDtoList= spellService.getListSpells(user,search);
+            List<SpellDto> spellDtoList = spellService.getListSpells(user, search);
             return ResponseEntity.status(HttpStatus.OK).body(spellDtoList);
         } catch (InvalidInputDataException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
@@ -82,12 +133,13 @@ public class SpellController {
 
     /**
      * Endpoint que devuelve un hechizo de un usuario
+     *
      * @param token token de la sesión del usuario al que pertenecen los hechizos
-     * @param id id del hechizo que se busca
+     * @param id    id del hechizo que se busca
      * @return Respuesta HTTP con el status code y la información correspondiente
      */
-    @GetMapping("/myspell")
-    public ResponseEntity<?> getSpell(@RequestParam String token ,@RequestParam long id){
+    @GetMapping()
+    public ResponseEntity<?> getSpell(@RequestParam String token, @RequestParam long id) {
         if (!tokenService.validateAndRenewToken(token)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión ha expirado"));
         }
@@ -97,8 +149,8 @@ public class SpellController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión no existe"));
         }
         try {
-            SpellDto spellDto= spellService.getSpell(id);
-            if(spellDto ==null){
+            SpellDto spellDto = spellService.getSpell(id);
+            if (spellDto == null) {
                 throw new InvalidInputDataException("Hechizo no encontrado");
             }
             return ResponseEntity.status(HttpStatus.OK).body(spellDto);
