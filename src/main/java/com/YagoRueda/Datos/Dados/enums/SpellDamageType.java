@@ -10,5 +10,8 @@ public enum SpellDamageType {
     POISON,
     RADIANT,
     PSYCHIC,
-    THUNDER;
+    THUNDER,
+    SLASHING,
+    BLUDGEONING,
+    PIERCING;
 }
