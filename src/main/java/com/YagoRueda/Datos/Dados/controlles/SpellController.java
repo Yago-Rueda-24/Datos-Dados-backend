@@ -96,8 +96,8 @@ public class SpellController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión no existe"));
         }
         try {
-            SpellEntity entity = spellService.deleteSpell(id);
-            return ResponseEntity.status(HttpStatus.OK).body(entity.toDTO());
+            spellService.deleteSpell(id);
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "Entidad borrada con exito"));
         } catch (InvalidInputDataException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         }

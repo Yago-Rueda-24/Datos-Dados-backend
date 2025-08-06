@@ -39,11 +39,12 @@ public class SpellService {
 
     /**
      * Modifica los datos de un spell existente
+     *
      * @param user {@code UserEntity} que representa al usuario que crea el hechizo
-     * @param dto {@code SpellDto} que representa el hechizo creado
+     * @param dto  {@code SpellDto} que representa el hechizo creado
      * @return {@code SpellEntity } que representa el hechizo modificado
      * @throws InvalidInputDataException En caso de que el id del hechizo no exista en bd
-     * @throws UnauthorizedException En caso que un usuario sin permisos intente modificar un hechizo
+     * @throws UnauthorizedException     En caso que un usuario sin permisos intente modificar un hechizo
      */
     public SpellEntity modifySpell(UserEntity user, SpellDto dto) throws InvalidInputDataException, UnauthorizedException {
         SpellEntity existing = spellRepository.findById(dto.getId())
@@ -66,28 +67,31 @@ public class SpellService {
         existing.setConcentration(dto.isConcentration());
         existing.setRitual(dto.isRitual());
         existing.setPublicVisible(dto.isPublicVisible());
-
+        existing.setDamageByLevel(dto.getDamageByLevel());
+        existing.setDamageType(dto.getDamageType());
         return spellRepository.save(existing);
     }
 
     /**
      * Elimina un hechizo de la base de datos
+     *
      * @param spellID Id del hechizo que se eliminara
      * @return {@code SpellEntity } que representa el hechizo eliminado
      * @throws InvalidInputDataException En caso de que el id del hechizo no exista en bd
      */
-    public SpellEntity deleteSpell(long spellID) throws InvalidInputDataException {
+    public void deleteSpell(long spellID) throws InvalidInputDataException {
         Optional<SpellEntity> deleteSpell = spellRepository.findById(spellID);
         if (deleteSpell.isEmpty()) {
             throw new InvalidInputDataException("Hechizo no encontrado");
         }
         spellRepository.delete(deleteSpell.get());
-        return deleteSpell.get();
+
     }
 
 
     /**
      * Devuelve una lista de hechizos con todos los hechizos de un usuario, se puede filtrar los hechizos devueltos por nombre utilizando el parametro search
+     *
      * @param user   El usuario al que le pertenecen los hechizos
      * @param search El nombre del hechizo buscado, si se deja vacio o nulo devolvera todos los hechizos
      * @return lista de DTO's con la información de los hechizos
@@ -102,6 +106,7 @@ public class SpellService {
 
     /**
      * Devuelve un hechizo específico con base en al ID que se le pase por parametro
+     *
      * @param id Id del hechizo que devolvera
      * @return DTO con la información del hechizo
      */

@@ -1,10 +1,16 @@
 package com.YagoRueda.Datos.Dados.models;
 
 import com.YagoRueda.Datos.Dados.Dtos.SpellDto;
+import com.YagoRueda.Datos.Dados.enums.SpellDamageType;
 import com.YagoRueda.Datos.Dados.exceptions.InvalidInputDataException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Entity
 public class SpellEntity {
@@ -52,6 +58,21 @@ public class SpellEntity {
     @Setter
     @Getter
     private boolean ritual;
+    @Setter
+    @Getter
+    private List<SpellDamageType> damageType;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "spell_damage_by_level",
+            joinColumns = @JoinColumn(name = "spell_id")
+    )
+    @MapKeyColumn(name = "nivel")
+    @Column(name = "dado_de_ataque")
+    @Getter
+    @Setter
+    private Map<Integer, String> damageByLevel = new TreeMap<>();
+
 
 
     public void setLevel(Integer newLevel) {
@@ -76,6 +97,8 @@ public class SpellEntity {
         dto.setDescription(this.description);
         dto.setConcentration(this.concentration);
         dto.setRitual(this.ritual);
+        dto.setDamageType(this.damageType);
+        dto.setDamageByLevel(this.damageByLevel);
         return dto;
     }
 
