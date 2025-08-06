@@ -7,10 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Entity
 public class SpellEntity {
@@ -51,6 +48,8 @@ public class SpellEntity {
     private String duration;
     @Setter
     @Getter
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
     @Setter
     @Getter
@@ -60,7 +59,7 @@ public class SpellEntity {
     private boolean ritual;
     @Setter
     @Getter
-    private List<SpellDamageType> damageType;
+    private SpellDamageType damageType;
 
     @ElementCollection
     @CollectionTable(
@@ -72,7 +71,6 @@ public class SpellEntity {
     @Getter
     @Setter
     private Map<Integer, String> damageByLevel = new TreeMap<>();
-
 
 
     public void setLevel(Integer newLevel) {

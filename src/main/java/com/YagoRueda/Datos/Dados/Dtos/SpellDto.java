@@ -29,7 +29,7 @@ public class SpellDto {
     private String description;
     private boolean concentration;
     private boolean ritual;
-    private List<SpellDamageType> damageType;
+    private SpellDamageType damageType;
     private Map<Integer, String> damageByLevel = new TreeMap<>();
 
 
