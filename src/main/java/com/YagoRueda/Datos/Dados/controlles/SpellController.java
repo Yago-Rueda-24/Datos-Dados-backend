@@ -30,6 +30,7 @@ public class SpellController {
 
     /**
      * Enpoint de creación de hechizos
+     *
      * @param token Token que representa la sesión de un usuario
      * @param dto   {@code SpellDto} que representa el hechizo creado
      * @return Respuesta HTTP con el status code correspondiente
@@ -56,8 +57,9 @@ public class SpellController {
 
     /**
      * Enpoint de modificación de hechizos
+     *
      * @param token Token que representa la sesión de un usuario
-     * @param dto {@code SpellDto} que representa el hechizo modificado
+     * @param dto   {@code SpellDto} que representa el hechizo modificado
      * @return Respuesta HTTP con el status code correspondiente
      */
     @PutMapping()
@@ -82,8 +84,9 @@ public class SpellController {
 
     /**
      * Enpoint de eliminación de hechizos
+     *
      * @param token Token que representa la sesión de un usuario
-     * @param id id del hechizo a eliminar
+     * @param id    id del hechizo a eliminar
      * @return Respuesta HTTP con el status code correspondiente
      */
     @DeleteMapping()
@@ -158,4 +161,41 @@ public class SpellController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         }
     }
+
+    @GetMapping("/wotspells")
+    public ResponseEntity<?> getWOTSpell(@RequestParam String token, @RequestParam(required = false) String search) {
+        if (!tokenService.validateAndRenewToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "la sesión ha expirado"));
+        }
+
+        UserEntity user = tokenService.getUser(token);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión no existe"));
+        }
+        try {
+            List<SpellDto> dtos = spellService.getWOTSpells(search);
+            return ResponseEntity.status(HttpStatus.OK).body(dtos);
+        } catch (InvalidInputDataException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/public")
+    public ResponseEntity<?> getPublicSpell(@RequestParam String token, @RequestParam(required = false) String search) {
+        if (!tokenService.validateAndRenewToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "la sesión ha expirado"));
+        }
+
+        UserEntity user = tokenService.getUser(token);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "la sesión no existe"));
+        }
+        try {
+            List<SpellDto> dtos = spellService.getPublicSpells(search);
+            return ResponseEntity.status(HttpStatus.OK).body(dtos);
+        } catch (InvalidInputDataException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+        }
+    }
+
 }

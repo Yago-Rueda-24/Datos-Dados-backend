@@ -115,4 +115,12 @@ public class SpellService {
         return opt.map(SpellEntity::toDTO).orElse(null);
     }
 
+    public List<SpellDto> getWOTSpells(String search){
+        return spellRepository.findWOTSpells(search).stream().map(SpellEntity::toDTO).toList();
+    }
+
+    public List<SpellDto> getPublicSpells(String search){
+        return spellRepository.findPublicSpells(search).stream().map(SpellEntity::toDTO).toList();
+    }
+
 }
