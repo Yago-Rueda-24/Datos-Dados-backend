@@ -12,10 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class OficialSpellInitializer implements CommandLineRunner {
@@ -66,7 +63,7 @@ public class OficialSpellInitializer implements CommandLineRunner {
         System.out.println("🔍 El número de hechizos coincide (" + totalSpells + "/" + oficialSpells + ").");
 
 
-        if (oficialSpells!= totalSpells) {
+        if (oficialSpells != totalSpells) {
             System.out.println("🔍 El número de hechizos no coincide (" + totalSpells + "/" + oficialSpells + "). Cargando hechizos oficiales...");
 
             restTemplate = new RestTemplate();
@@ -94,7 +91,20 @@ public class OficialSpellInitializer implements CommandLineRunner {
                         spell.setLevel(spellNode.get("level").asInt());
                         spell.setDescription(spellNode.get("desc").get(0).asText());
                         spell.setSchool(spellNode.get("school").get("name").asText());
-                        spell.setComponents(spellNode.has("components") ? objectMapper.writeValueAsString(spellNode.get("components")) : "[]");
+                        if (spellNode.has("components")) {
+                            String componentes_sin_limpiar = objectMapper.writeValueAsString(spellNode.get("components"));
+                            // jsonArrayStr = "[\"V\",\"S\",\"M\"]"
+                            String componentes_limpiados = componentes_sin_limpiar.
+                                     replace("[", "")
+                                    .replace("]", "")
+                                    .replace("\"", "")
+                                    .replace(",", ", ");
+
+                            spell.setComponents(componentes_limpiados);
+                            // Resultado: "V, S, M"
+                        } else {
+                            spell.setComponents("No tiene componentes");
+                        }
                         spell.setCastTime(spellNode.has("casting_time") ? spellNode.get("casting_time").asText() : "");
                         spell.setDuration(spellNode.has("duration") ? spellNode.get("duration").asText() : "");
                         spell.setCastRange(spellNode.has("range") ? spellNode.get("range").asText() : "");
@@ -103,7 +113,7 @@ public class OficialSpellInitializer implements CommandLineRunner {
                         spell.setPublicVisible(true);
                         spell.setUser(adminUser);
 
-                        if(spellNode.has("damage")){
+                        if (spellNode.has("damage")) {
                             JsonNode damage = spellNode.get("damage");
 
                             if (damage.has("damage_type")) {
