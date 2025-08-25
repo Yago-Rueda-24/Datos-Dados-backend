@@ -12,6 +12,9 @@ WORKDIR /app
 # Copiar el archivo pom y el código fuente
 COPY . .
 
+# Dar permisos de ejecución al wrapper
+RUN chmod +x ./mvnw
+
 # Construir el JAR con Maven Wrapper
 RUN ./mvnw clean package -DskipTests
 
